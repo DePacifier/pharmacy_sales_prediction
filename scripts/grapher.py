@@ -1,6 +1,17 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 import seaborn as sns
+
+
+def graph_comparison_bar_plot(dataframe1, dataframe2, column, plot_name):
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+    sns.histplot(dataframe1[column], ax=ax1)
+    sns.histplot(dataframe2[column], ax=ax2)
+    fig.suptitle(f'Distribution of {plot_name}', size=20, fontweight='bold')
+    # plt.show()
+
+    return plt
 
 
 def modified_bar_plot(df: pd.DataFrame, x: str, y: str, title: str) -> None:
