@@ -377,7 +377,7 @@ class DataCleaner:
                         self.df[col] = pd.to_numeric(
                             self.df[col], downcast='unsigned')
 
-            return self.df.info()
+            return self.df
 
         except:
             print('Failed to optimize')
@@ -395,7 +395,7 @@ class DataCleaner:
         None
         """
         try:
-            self.df.to_csv(name)
+            self.df.to_csv(name, index=False)
 
         except:
             print("Failed to save data")

@@ -134,3 +134,12 @@ class DataManipulator:
             return self.df
         except:
             print("Failed to standardize the column")
+
+    def standardize_columns(self, columns: list) -> pd.DataFrame:
+        try:
+            for col in columns:
+                self.df = self.standardize_column(col)
+
+            return self.df
+        except:
+            print(f"Failed to standardize {col} column")
