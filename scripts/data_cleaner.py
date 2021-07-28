@@ -83,6 +83,9 @@ class DataCleaner:
         except:
             print('failed to change column to Date Type')
 
+    def remove_nulls(self) -> pd.DataFrame:
+        return self.df.dropna()
+
     def add_season_col(self, month_col: str) -> None:
         # helper function
         def get_season(month: int):
@@ -362,18 +365,22 @@ class DataCleaner:
         """
         data_types = self.df.dtypes
         optimizable = ['float64', 'int64']
-        for col in data_types.index:
-            if(data_types[col] in optimizable):
-                if(data_types[col] == 'float64'):
-                    # downcasting a float column
-                    self.df[col] = pd.to_numeric(
-                        self.df[col], downcast='float')
-                elif(data_types[col] == 'int64'):
-                    # downcasting an integer column
-                    self.df[col] = pd.to_numeric(
-                        self.df[col], downcast='unsigned')
+        try:
+            for col in data_types.index:
+                if(data_types[col] in optimizable):
+                    if(data_types[col] == 'float64'):
+                        # downcasting a float column
+                        self.df[col] = pd.to_numeric(
+                            self.df[col], downcast='float')
+                    elif(data_types[col] == 'int64'):
+                        # downcasting an integer column
+                        self.df[col] = pd.to_numeric(
+                            self.df[col], downcast='unsigned')
 
-        return self.df.info()
+            return self.df.info()
+
+        except:
+            print('Failed to optimize')
 
     def save_clean_data(self, name: str):
         """
