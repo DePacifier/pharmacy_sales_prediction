@@ -3,6 +3,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+def bar_plot(data, column):
+    fig, axs = plt.subplots(1, 2, figsize=(20, 5))
+    fig.suptitle(f'{column} Column Distribution')
+    sns.countplot(x=column, data=data[data["experiment"] == "exposed"], ax=axs[0]).set_title(
+        'Experiment Group')
+
+    sns.countplot(x=column, data=data[data["experiment"]
+                  == "control"], ax=axs[1]).set_title('Control Group')
+
 def graph_comparison_bar_plot(dataframe1, dataframe2, column, plot_name):
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
