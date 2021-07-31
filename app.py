@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, './scripts')
-from pages import EDA, EDA2
+from pages import EDA, EDA2, model_implementation
 from multiapp import MultiApp
 import streamlit as st
 
@@ -24,6 +24,7 @@ This multi-page app is using the [streamlit-multiapps](https://github.com/uprane
 # Add all your application here
 app.add_app("Data Exploration and Analysis, PART I", EDA.app)
 app.add_app("Data Exploration and Analysis, PART II", EDA2.app)
+app.add_app("Sales Prediciton", model_implementation.app)
 
 # The main app
 app.run()
