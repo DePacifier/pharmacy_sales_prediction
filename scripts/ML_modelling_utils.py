@@ -1,3 +1,4 @@
+from logging import log
 import numpy as np
 import pandas as pd
 import dvc.api
@@ -9,6 +10,15 @@ from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix, accuracy
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from xgboost import plot_tree, XGBClassifier, DMatrix
 from scipy.stats import uniform
+
+## When importing from notebook
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join('..')))
+from scripts.logger_creator import CreateLogger
+
+logger = CreateLogger('Modelling Utilities', handlers=1)
+logger = logger.get_default_logger()
 
 
 def import_all_data_using_tagslist(path: str, repo: str, tags: list) -> dict:
@@ -105,11 +115,19 @@ def get_train_validate_test_sets(df: pd.DataFrame, predicted_column: str, remove
 
 
 def calculate_metrics(y_test, y_preds):
-    rmse = np.sqrt(mean_squared_error(y_test, y_preds))
-    r_sq = r2_score(y_test, y_preds)
-    mae = mean_absolute_error(y_test, y_preds)
+    try:
+        rmse = np.sqrt(mean_squared_error(y_test, y_preds))
+        r_sq = r2_score(y_test, y_preds)
+        mae = mean_absolute_error(y_test, y_preds)
 
-    return {'RMSE Score': rmse, 'R2_Squared': r_sq, 'MAE Score': mae}
+        # Logging Values
+        logger.info("RMSE Score is: {:.2f}".format(rmse))
+        logger.info("R2 Square Score is: {:.2f}".format(r_sq))
+        logger.info("MAE Score is: {:.2f}".format(mae))
+
+        return {'RMSE Score': rmse, 'R2_Squared': r_sq, 'MAE Score': mae}
+    except Exception as e:
+        logger.exception("Model Metrics Calculation failed")
 
 
 def evaluate_model(dt_classifier, x_valid, y_valid, x_test, y_test, show=False):
