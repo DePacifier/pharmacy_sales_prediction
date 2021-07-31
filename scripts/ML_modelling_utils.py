@@ -10,6 +10,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, confusion_matrix, accuracy
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from xgboost import plot_tree, XGBClassifier, DMatrix
 from scipy.stats import uniform
+import datetime
 
 ## When importing from notebook
 import sys
@@ -19,6 +20,18 @@ from scripts.logger_creator import CreateLogger
 
 logger = CreateLogger('Modelling Utilities', handlers=1)
 logger = logger.get_default_logger()
+
+# Name generator for models
+
+
+def generate_model_name(mse_score: float) -> str:
+    # Creating datetime object containing current date and time
+    now = datetime.now()
+    # Change format to dd/mm/YY H:M:S
+    dt_string = now.strftime("%d-%m-%Y-%H-%M-%S-")
+    dt_string = dt_string + "{:.2%}".format(mse_score)
+
+    return dt_string
 
 
 def import_all_data_using_tagslist(path: str, repo: str, tags: list) -> dict:
