@@ -1,7 +1,7 @@
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler, Normalizer, StandardScaler
-
-## When importing from notebook
+from sklearn.preprocessing import MinMaxScaler, Normalizer, StandardScaler, LabelEncoder
+from datetime import datetime
+# When importing from notebook
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join('..')))
@@ -9,6 +9,7 @@ from scripts.logger_creator import CreateLogger
 
 logger = CreateLogger('Data Manipulatior', handlers=1)
 logger = logger.get_default_logger()
+
 
 class DataManipulator:
     def __init__(self, df: pd.DataFrame, deep=False):
@@ -32,20 +33,19 @@ class DataManipulator:
         try:
             date_index = self.df.columns.get_loc(day_of_week_col)
             self.df.insert(date_index + 1, 'WeekDay',
-                            self.df[day_of_week_col].apply(lambda x: 1 if x <= 5 else 0))
-            
+                           self.df[day_of_week_col].apply(lambda x: 1 if x <= 5 else 0))
+
             logger.info("Successfully Added WeekDay Column to the DataFrame")
 
         except Exception as e:
             logger.exception("Failed to Add WeekDay Column")
-        
 
     def add_week_ends(self, day_of_week_col: str) -> pd.DataFrame:
         try:
             date_index = self.df.columns.get_loc(day_of_week_col)
             self.df.insert(date_index + 1, 'WeekEnd',
-                            self.df[day_of_week_col].apply(lambda x: 1 if x > 5 else 0))
-            
+                           self.df[day_of_week_col].apply(lambda x: 1 if x > 5 else 0))
+
             logger.info("Successfully Added WeekEnd Column to the DataFrame")
 
         except Exception as e:
@@ -56,10 +56,9 @@ class DataManipulator:
     # and 10 days for Easter
     # And 3 days for public holiday
     # get state holiday list
-    #a = public holiday, b = Easter holiday, c = Christmas, 0 = None
+    # a = public holiday, b = Easter holiday, c = Christmas, 0 = None
 
-
-    def affect_list(self,change_list, interval, duration, index):
+    def affect_list(self, change_list, interval, duration, index):
         start_pt = int(index-duration/2) - interval
         try:
             for index in range(start_pt, start_pt + interval):
@@ -73,8 +72,7 @@ class DataManipulator:
 
         return change_list
 
-
-    def modify_holiday_list(self,holiday_list: list) -> list:
+    def modify_holiday_list(self, holiday_list: list) -> list:
         new_index = ["neither"] * len(holiday_list)
         for index, value in enumerate(holiday_list):
             if value == 'a':  # public holiday
@@ -87,7 +85,6 @@ class DataManipulator:
                 pass
 
         return new_index
-
 
     def add_number_of_days_to_holiday(self, state_holiday_col: str):
         try:
@@ -117,10 +114,10 @@ class DataManipulator:
                     continue
 
             self.df.insert(date_index + 1, 'DaysToHoliday',
-                            days_to_holiday_index)
+                           days_to_holiday_index)
 
             logger.info("Successfully Added DaysToHoliday Column")
-        
+
         except Exception as e:
             logger.exception("Failed to Add DaysToHoliday Column")
 
@@ -152,16 +149,15 @@ class DataManipulator:
             days_to_after_holiday_index.insert(0, 0)
 
             self.df.insert(date_index + 1, 'DaysAfterHoliday',
-                            days_to_after_holiday_index[:-1])
+                           days_to_after_holiday_index[:-1])
 
             logger.info("Successfully Added DaysAfterHoliday Column")
 
         except Exception as e:
             logger.exception("Failed to Add DaysAfterHoliday Column")
 
-
-    def return_day_status_in_month(self,day: int) -> int:
-        ## conside 1 is beginning of month, 2 is middle of the month and 3 is end of the month
+    def return_day_status_in_month(self, day: int) -> int:
+        # conside 1 is beginning of month, 2 is middle of the month and 3 is end of the month
         if(day <= 10):
             return 1
         elif(day > 10 and day <= 20):
@@ -169,40 +165,37 @@ class DataManipulator:
         else:
             return 3
 
-
     def add_month_timing(self, day_col: str) -> pd.DataFrame:
         try:
             date_index = self.df.columns.get_loc(day_col)
             self.df.insert(date_index + 1, 'MonthTiming',
-                            self.df[day_col].apply(self.return_day_status_in_month))
-            
+                           self.df[day_col].apply(self.return_day_status_in_month))
+
             logger.info("Successfully Added MonthTiming Column")
 
         except Exception as e:
             logger.exception("Failed to Add MonthTiming Column")
 
-    def get_season(self,month: int):
-            if(month <= 2 or month == 12):
-                return 'Winter'
-            elif(month > 2 and month <= 5):
-                return 'Spring'
-            elif(month > 5 and month <= 8):
-                return 'Summer'
-            else:
-                return 'Autumn'
-
+    def get_season(self, month: int):
+        if(month <= 2 or month == 12):
+            return 'Winter'
+        elif(month > 2 and month <= 5):
+            return 'Spring'
+        elif(month > 5 and month <= 8):
+            return 'Summer'
+        else:
+            return 'Autumn'
 
     def add_season(self, month_col: str) -> pd.DataFrame:
         try:
             date_index = self.df.columns.get_loc(month_col)
             self.df.insert(date_index + 1, 'Season',
-                            self.df[month_col].apply(self.get_season))
-            
+                           self.df[month_col].apply(self.get_season))
+
             logger.info("Successfully Added Season Column")
 
         except Exception as e:
             logger.exception("Failed to Add Season Column")
-
 
     def sort_using_column(self, column: str) -> pd.DataFrame:
         """
@@ -327,3 +320,80 @@ class DataManipulator:
             return self.df
         except:
             print(f"Failed to standardize {col} column")
+
+    def minmax_scale_column(self, column: str, range_tup: tuple = (0, 1)) -> pd.DataFrame:
+        """
+            Returns the objects DataFrames column normalized using Normalizer
+            Parameters
+            ----------
+            column:
+                Type: str
+            length:
+                Type: int
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        try:
+            std_column_df = pd.DataFrame(self.df[column])
+            std_column_values = std_column_df.values
+            minmax_scaler = MinMaxScaler(feature_range=range_tup)
+            normalized_data = minmax_scaler.fit_transform(std_column_values)
+            self.df[column] = normalized_data
+
+            return self.df
+        except:
+            print("Failed to standardize the column")
+
+    def minmax_scale_columns(self, columns: list, range_tup: tuple = (0, 1)) -> pd.DataFrame:
+        try:
+            for col in columns:
+                self.df = self.minmax_scale_column(col, range_tup)
+
+            return self.df
+        except:
+            print(f"Failed to MinMax standardize {col} column")
+
+    def fill_columns_with_max(self, columns: list) -> None:
+        try:
+            for col in columns:
+                self.df[col] = self.df[col].fillna(self.df[col].max())
+
+        except Exception as e:
+            print("Failed to fill with max value")
+
+    def fill_columns_with_most_frequent(self, columns: list) -> None:
+        try:
+            for col in columns:
+                self.df[col] = self.df[col].fillna(self.df[col].mode().iloc[0])
+
+        except Exception as e:
+            print("Failed to fill with max value")
+
+    def label_columns(self, columns: list) -> dict:
+        labelers = {}
+        try:
+            for col in columns:
+                le = LabelEncoder()
+                le_fitted = le.fit(self.df[col].values)
+                self.df[col] = le_fitted.transform(self.df[col].values)
+                labelers[col] = le_fitted
+
+            return labelers
+
+        except Exception as e:
+            print("Failed to Label Encode columns")
+
+    def create_date(self, name:str='Date',columns: list=['Year','Month','Day']) -> None:
+        date_column = []
+        try:
+            for index, row in self.df.iterrows():
+                date_column.append(
+                    datetime(int(row[columns[0]]), int(row[columns[1]]), int(row[columns[2]])))
+
+            self.df[name] = date_column
+        
+        except Exception as e:
+            print('Failed to create Date column',e)
+
