@@ -11,6 +11,7 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from xgboost import plot_tree, XGBClassifier, DMatrix
 from scipy.stats import uniform
 from datetime import datetime
+from pickle import dump
 
 ## When importing from notebook
 import sys
@@ -32,6 +33,14 @@ def generate_model_name(mse_score: float) -> str:
     dt_string = dt_string + "{:.2%}".format(mse_score)
 
     return dt_string
+
+def save_model(model, mse_score) -> None:
+    try:
+        file_name = '../model/' + generate_model_name(mse_score=mse_score) +'.pkl'
+        with open(file_name, 'wb') as handle:
+            dump(model, handle)
+    except Exception as e:
+        logger.exception('Failed to save model')
 
 
 def import_all_data_using_tagslist(path: str, repo: str, tags: list) -> dict:
@@ -134,9 +143,9 @@ def calculate_metrics(y_test, y_preds, name:str=''):
         mae = mean_absolute_error(y_test, y_preds)
 
         # Logging Values
-        logger.info("RMSE Score is: {:.5%}".format(rmse))
-        logger.info("R2 Square Score is: {:.5%}".format(r_sq))
-        logger.info("MAE Score is: {:.5%}".format(mae))
+        logger.info("{} RMSE Score is: {:.5%}".format(name, rmse))
+        logger.info("{} R2 Square Score is: {:.5%}".format(name, r_sq))
+        logger.info("{} MAE Score is: {:.5%}".format(name, mae))
 
         return {f'{name}RMSE Score': rmse, f'{name}R2_Squared': r_sq, f'{name}MAE Score': mae}
     except Exception as e:
