@@ -8,7 +8,7 @@ sys.path.insert(0, '../scripts')
 def app():
 
     # Load Saved Results Data
-    model = load(filename='./models/satisfaction_scorer_model.pkl')
+    # model = load(filename='./models/satisfaction_scorer_model.pkl')
 
     st.title("Store Sales Predictor")
 
@@ -85,9 +85,9 @@ def app():
                      promo, state_hol_stat, day_after_hol, rem_days_holiday, school_hol, store_type, store_assortment,
                      distance, comp_month, comp_year, promo2_status, promo2_start_week,
                      promo2_year, promo_interval]
-            val = model.predict([array])
-            satisfaction = [i[0] for i in val][0]
-            st.write(
-                'The predicted satisfaction score of the user is: {:.3f}'.format(satisfaction))
+            # val = model.predict([array])
+            # satisfaction = [i[0] for i in val][0]
+            # st.write(
+                # 'The predicted satisfaction score of the user is: {:.3f}'.format(satisfaction))
         except:
             print('Need more inputs')
