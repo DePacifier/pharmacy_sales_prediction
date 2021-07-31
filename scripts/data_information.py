@@ -20,6 +20,26 @@ class DataInfo:
         else:
             self.df = df
 
+    def get_numeric_columns(self, type_list: list = ['int64', 'float64', 'uint8', 'uint16', 'float32']):
+        try:
+            numeric_features = self.df.select_dtypes(
+                include=type_list).columns.tolist()
+
+            return numeric_features
+
+        except Exception as e:
+            print('Failed to get numeric columns')
+
+    def get_object_columns(self):
+        try:
+            categorical_features = self.df.select_dtypes(
+                include=['object']).columns.tolist()
+
+            return categorical_features
+
+        except Exception as e:
+            print('Failed to get categorical features')
+
     def get_basic_description(self):
         """
             Runs get_size, get_total_memory_usage, get_memory_usage and get_information
