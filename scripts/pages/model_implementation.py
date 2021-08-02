@@ -15,104 +15,9 @@ from scripts.data_loader import load_df_from_csv
 def read_csv_without_index(csv_path):
     try:
         df = pd.read_csv(csv_path)
-        print("file read as csv")
         return df
     except FileNotFoundError:
-        print("file not found")
-
-
-# def datToAndAfterHoliday(df, Column, holidays):
-
-#     to = []
-#     after = []
-#     for a in df[Column]:
-#         index = bisect.bisect(holidays, a)
-#         if len(holidays) == index:
-#             to.append(pd.Timedelta(0, unit='d'))
-#             after.append(a - holidays[index-1])
-#         else:
-#             after.append(holidays[index] - a)
-#             to.append(a - holidays[index-1])
-#     return to, after
-
-
-# def startMidEndMonth(x):
-#     if x < 10:
-#         return 0
-#     elif x < 20:
-#         return 1
-#     else:
-#         return 2
-
-
-# def isWeekend(x):
-#     if x < 6:
-#         return 0
-#     else:
-#         return 1
-
-
-# def dateExplode(df, column):
-#     try:
-#         df['Year'] = pd.DatetimeIndex(df[column]).year
-#         df['Month'] = pd.DatetimeIndex(df[column]).month
-#         df['Day'] = pd.DatetimeIndex(df[column]).day
-#     except KeyError:
-#         print("Column couldn't be found")
-#         return
-#     return df
-
-
-# def generate_features(df):
-
-#     df["Date"] = pd.to_datetime(df["Date"])
-
-#     df["weekend"] = df["DayOfWeek"].apply(isWeekend)
-#     df["MonthState"] = df["Day"].apply(startMidEndMonth)
-#     with open('dates.pickle', 'rb') as handle:
-#         dates = pickle.load(handle)
-#     df["To"], df["After"] = datToAndAfterHoliday(df, "Date", dates)
-
-#     df["After"] = pd.to_timedelta(df["After"])
-
-#     df["To"] = pd.to_timedelta(df["To"])
-
-#     df["After"] = pd.to_numeric(df['After'].dt.days, downcast='integer')
-#     df["To"] = pd.to_numeric(df['To'].dt.days, downcast='integer')
-
-#     return df
-
-
-# def predict(model, csv):
-#     csv_copy = csv.copy()
-#     csv_copy.drop("Store", axis=1, inplace=True)
-
-#     csv_copy.drop("Id", axis=1, inplace=True)
-
-#     csv_copy.drop("Date", axis=1, inplace=True)
-#     print(csv_copy.columns)
-#     prediction = model.predict(csv_copy)
-
-#     pred_df = csv.copy()
-
-#     pred_df["Sales-Prediction"] = prediction
-#     pred_df['Date'] = pd.to_datetime(pred_df['Date'])
-#     return pred_df
-
-
-# def man_predict(model, csv):
-
-#     csv_copy = csv.copy()
-#     csv_copy.drop("Store", axis=1, inplace=True)
-
-#     csv_copy.drop("Date", axis=1, inplace=True)
-
-#     prediction = model.predict(csv_copy)
-#     pred_df = csv.copy()
-
-#     pred_df["Sales-Prediction"] = prediction
-#     pred_df['Date'] = pd.to_datetime(pred_df['Date'])
-#     return pred_df
+        print('File Not Found')
 
 def get_model_columns():
     # Create Result Pickler Object
@@ -129,8 +34,7 @@ def import_model(columns=None):
             model = 'runs:/2d6250149bd746ab84c41372792902b4/model'
             # Load model as a PyFuncModel.
             model = mlflow.pyfunc.load_model(model)
-            data = pd.DataFrame(columns=columns)
-
+            # data = pd.DataFrame(columns=columns)
             # a_series = pd.Series(a["data"], index=data.columns)
             # data = data.append(a_series, ignore_index=True)
         else:
@@ -139,8 +43,6 @@ def import_model(columns=None):
         
         return model
             # model.predict([a['data']])
-
-        
 
     except Exception as e:
         print('Failed to load model', e)
@@ -188,7 +90,6 @@ def day_to_after_holiday(data, holidays):
     days_to = []
     days_after = []
     holidays = holidays.sort_values(by=['Month','Day'], ascending='True')
-    print(holidays)
 
     for index, row1 in data.iterrows():
         lower_month = 12
@@ -263,6 +164,10 @@ def add_store_value(data:pd.DataFrame, store_reference):
 
     return final_dataframe
 
+def get_actual_sale(value, prev_min, prev_max, new_min, new_max):
+    actual_sale = ((value - prev_min) / (prev_max - prev_min)) * (new_max - new_min) + new_min
+    return actual_sale
+
 def predict(model, data, columns):
     result_df = data[['Store','Year','Month','Day']]
     data.drop('Store', axis=1, inplace=True)
@@ -270,7 +175,7 @@ def predict(model, data, columns):
     predictions = []
     for index, row in data.iterrows():
         prediction = model.predict([data.iloc[index,:].values.tolist()])
-        predictions.append(prediction[0])
+        predictions.append(get_actual_sale(prediction[0], -1.5, 9.3, 0, 41551))
     
     result_df['Predicted Sales'] = predictions
 
@@ -291,7 +196,6 @@ def app():
 
     # Import Model for the predicition
     model = import_model()
-    print(type(model))
 
     # Load Store References
     store_reference = load_df_from_csv('./models/store_reference.csv')
