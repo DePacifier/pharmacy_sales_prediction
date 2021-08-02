@@ -12,12 +12,14 @@ from scipy.stats import uniform
 from datetime import datetime
 from pickle import dump
 
-## When importing from notebook
-import sys
-import os
-# sys.path.append(os.path.abspath(os.path.join('..')))
-# from scripts.logger_creator import CreateLogger
-from logger_creator import CreateLogger
+try:
+    ## When importing from notebook
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join('..')))
+    from scripts.logger_creator import CreateLogger
+except:
+    from logger_creator import CreateLogger
 
 logger = CreateLogger('Modelling Utilities', handlers=1)
 logger = logger.get_default_logger()
