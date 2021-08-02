@@ -23,7 +23,7 @@ jobs:
 
       - name: Model Results
         run: |
-          python scripts/cml_result.py
+          python cml_result.py
 
           cat models/results.txt >> report.md
           cml-send-comment report.md
