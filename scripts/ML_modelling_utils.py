@@ -36,7 +36,7 @@ def generate_model_name(mse_score: float) -> str:
 
 def save_model(model, mse_score) -> None:
     try:
-        file_name = '../model/' + generate_model_name(mse_score=mse_score) +'.pkl'
+        file_name = '../models/' + generate_model_name(mse_score=mse_score) +'.pkl'
         with open(file_name, 'wb') as handle:
             dump(model, handle)
     except Exception as e:
