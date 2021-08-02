@@ -1,6 +1,5 @@
 from scripts.data_manipulation import DataManipulator
 from scripts.data_cleaner import DataCleaner
-from numpy.core.records import array
 import streamlit as st
 import mlflow
 from pickle import load
@@ -8,7 +7,7 @@ import pandas as pd
 import numpy as np
 import sys
 import datetime
-sys.path.insert(0, '../scripts')
+import base64
 
 from scripts.results_pickler import ResultPickler
 from scripts.data_loader import load_df_from_csv
@@ -126,6 +125,7 @@ def import_model(columns=None):
     '''Import from mlflow if possible or get saved model'''
     try:
         if(columns != None):
+            print('mlflow')
             model = 'runs:/2d6250149bd746ab84c41372792902b4/model'
             # Load model as a PyFuncModel.
             model = mlflow.pyfunc.load_model(model)
@@ -134,15 +134,16 @@ def import_model(columns=None):
             # a_series = pd.Series(a["data"], index=data.columns)
             # data = data.append(a_series, ignore_index=True)
         else:
-            with open('../models/01-08-2021-21-23-15-74.17%.pkl', 'rb') as handle:
+            with open('./models/01-08-2021-21-23-15-74.17%.pkl', 'rb') as handle:
                 model = load(handle)
-
+        
+        return model
             # model.predict([a['data']])
 
-        return model
+        
 
     except Exception as e:
-        print('Failed to load model')
+        print('Failed to load model', e)
 
 def dayofweek(data):
     values = []
@@ -253,9 +254,35 @@ def create_additional_datas(data):
     # Create Days to and after holiday
     day_to_after_holiday(data, holiday_reference)
 
-    data = data[['DayOfWeek', 'WeekDay', 'Year', 'Month', 'Season', 'Day', 'MonthTiming', 'Open', 'Promo', 'StateHoliday', "DaysAfterHoliday","DaysToHoliday", "SchoolHoliday"]]
+    data = data[["Store",'DayOfWeek', 'WeekDay', 'Year', 'Month', 'Season', 'Day', 'MonthTiming', 'Open', 'Promo', 'StateHoliday', "DaysAfterHoliday","DaysToHoliday", "SchoolHoliday"]]
 
     return data
+
+def add_store_value(data:pd.DataFrame, store_reference):
+    final_dataframe = pd.merge(data, store_reference, on='Store')
+
+    return final_dataframe
+
+def predict(model, data, columns):
+    result_df = data[['Store','Year','Month','Day']]
+    data.drop('Store', axis=1, inplace=True)
+    data.columns = columns
+    predictions = []
+    for index, row in data.iterrows():
+        prediction = model.predict([data.iloc[index,:].values.tolist()])
+        predictions.append(prediction[0])
+    
+    result_df['Predicted Sales'] = predictions
+
+    return result_df
+
+
+def download_button(df):
+    # if no filename is given, a string is returned
+    csv = df.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="Store Predicitons.csv">Download Predicitions CSV File</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
 def app():
 
@@ -264,10 +291,10 @@ def app():
 
     # Import Model for the predicition
     model = import_model()
+    print(type(model))
 
     # Load Store References
     store_reference = load_df_from_csv('./models/store_reference.csv')
-    store_reference.drop('Store', axis=1, inplace=True)
 
     # Load Saved Results Data
     # model = load(filename='./models/satisfaction_scorer_model.pkl')
@@ -283,16 +310,19 @@ def app():
         if (test_file):
             test_csv = read_csv_without_index(test_file)
             st.dataframe(test_csv)
-            # st.write(test_csv)
 
             if st.button('Predict'):
                 st.write("Predict clicked")
-                # dateExplode(test_csv,column="Date")
-                # test_store=merge_store(test_csv)
-                # test_store=generate_features(test_store)
-                # # st.write(test_csv)
-                # prediction=predict(model,test_store)
-                # st.write(prediction)
+                train_data = create_additional_datas(test_csv)
+                st.dataframe(train_data)
+                final_data = add_store_value(train_data, store_reference)
+                st.dataframe(final_data)
+
+                prediction = predict(model, final_data, model_columns)
+                st.dataframe(prediction)
+
+                download_button(prediction)
+
                 
     else:
 
@@ -310,15 +340,14 @@ def app():
         if st.button('Predict'):
             st.write('predict button clicked')
             # Create dataframe with the values
-            pred_value = pd.DataFrame(columns=model_columns)
-            store_values = store_reference.iloc[store_id + 1,:]
-            data = {'Date': [date], 'StateHoliday': [state_hoilday],'SchoolHoliday': [school_holiday], 'Promo':[promo], 'Open':[is_open]}
+            data = {'Store': [store_id], 'Date': [date], 'StateHoliday': [state_hoilday],'SchoolHoliday': [school_holiday], 'Promo':[promo], 'Open':[is_open]}
             initial_data = pd.DataFrame(data=data)
+            st.dataframe(initial_data)
             train_data = create_additional_datas(initial_data)
             st.dataframe(train_data)
-            # final_data = pd.concat(
-            #     [train_data, store_values], axis=1, ignore_index=True)
-            # st.dataframe(final_data)
-                        
-            # st.write(f"{pred['Sales-Prediction'].to_list()[0]:.2f}")
+            final_data = add_store_value(train_data, store_reference)
+            st.dataframe(final_data)
+
+            prediction = predict(model, final_data, model_columns)
+            st.dataframe(prediction)
 
