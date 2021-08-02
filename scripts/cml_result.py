@@ -10,11 +10,12 @@ try:
     logger = logger.get_default_logger()
     # Importing Model
     model_name = '01-08-2021-21-23-15-74.17%.pkl'
-    with open('../models/'+model_name , 'rb') as handle:
+    model_dir = './../models/'+model_name
+    with open(model_dir , 'rb') as handle:
         model = load(handle)
         logger.info('Model Loaded Successfully!')
     # Importing data to test with
-    test_data = load_df_from_csv('../models/test.csv')
+    test_data = load_df_from_csv('./../models/test.csv')
     # Get x_value and y_values
     y_values = test_data['Sales']
     x_values = test_data.drop(['Sales'], axis=1)
