@@ -1,7 +1,7 @@
 from pickle import load
-from data_loader import load_df_from_csv
-from logger_creator import CreateLogger
-from ML_modelling_utils import calculate_metrics
+from scripts.data_loader import load_df_from_csv
+from scripts.logger_creator import CreateLogger
+from scripts.ML_modelling_utils import calculate_metrics
 from datetime import datetime
 
 try:
@@ -10,12 +10,12 @@ try:
     logger = logger.get_default_logger()
     # Importing Model
     model_name = '01-08-2021-21-23-15-74.17%.pkl'
-    model_dir = './../models/'+model_name
+    model_dir = './models/'+model_name
     with open(model_dir , 'rb') as handle:
         model = load(handle)
         logger.info('Model Loaded Successfully!')
     # Importing data to test with
-    test_data = load_df_from_csv('./../models/test.csv')
+    test_data = load_df_from_csv('./models/test.csv')
     # Get x_value and y_values
     y_values = test_data['Sales']
     x_values = test_data.drop(['Sales'], axis=1)
@@ -31,7 +31,7 @@ try:
     date = datetime.now()
     date = date.strftime("%A-%B-%Y : %I-%M-%S %p")
     
-    with open('../models/results.txt', 'w') as file:
+    with open('./models/results.txt', 'w') as file:
         file.write(f'Date:\n\t{date}\n')
         file.write(f'Model Name:\n\t{model_name}\n')
         file.write('Test Score:\n\t{:2%}\n'.format(score))
