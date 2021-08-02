@@ -17,7 +17,8 @@ from pickle import dump
 import sys
 import os
 # sys.path.append(os.path.abspath(os.path.join('..')))
-from scripts.logger_creator import CreateLogger
+# from scripts.logger_creator import CreateLogger
+from logger_creator import CreateLogger
 
 logger = CreateLogger('Modelling Utilities', handlers=1)
 logger = logger.get_default_logger()
