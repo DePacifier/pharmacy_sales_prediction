@@ -1,5 +1,8 @@
 # Rossmann-Pharmaceuticals-Sales-Prediction
 
+## Check Dashboard:
+👉 https://share.streamlit.io/depacifier/pharmacy_sales_prediction/main/app.py
+
 **Table of Contents**
 
 - [Rossmann-Pharmaceuticals-Sales-Prediction](#rossmann-pharmaceuticals-sales-prediction)
